@@ -31,3 +31,45 @@ colors <- read.csv("data/colors.csv")
 pop_colour %>% 
   inner_join(colors, by = c("color_id" = "id"), suffix = c("_set", "_color")) %>% 
   count(name_color, sort = TRUE)
+
+
+# dont have the exact dataset
+# left join
+millennium_falcon <- inventory_parts_joined %>%
+  filter(set_num == "7965-1")
+star_destroyer <- inventory_parts_joined %>%
+  filter(set_num == "75190-1")
+# Combine the star_destroyer and millennium_falcon tables
+millennium_falcon %>%
+  left_join(star_destroyer, by = c("part_num", "color_id"), suffix = c("_falcon", "_star_destroyer"))
+
+# we want to know the color quantity in the falcon and star_destroyer sets
+# Aggregate Millennium Falcon for the total quantity in each part
+millennium_falcon_colors <- millennium_falcon %>%
+  group_by(color_id) %>%
+  summarize(total_quantity = sum(quantity))
+
+# Aggregate Star Destroyer for the total quantity in each part
+star_destroyer_colors <- star_destroyer %>%
+  group_by(color_id) %>%
+  summarize(total_quantity = sum(quantity))
+
+# Left join the Millennium Falcon colors to the Star Destroyer colors
+millennium_falcon_colors %>%
+  left_join(star_destroyer_colors, by = "color_id", suffix = c("_falcon", "_star_destroyer"))
+
+inventory_version_1 <- inventories %>%
+  filter(version == 1)
+
+
+#the inventories table has a version column, for when a LEGO kit gets some kind of change or upgrade. 
+#It would be fair to assume that all sets (which joins well with inventories) would have at least a version 1. 
+#But let's test this assumption out in the following exercise.
+
+# Join versions to sets
+# both have set_num
+sets %>%
+  left_join(inventory_version_1, by = "set_num", suffix = c("_set", "_inventory")) %>%
+  # Filter for where version is na
+  filter(is.na(version))
+
